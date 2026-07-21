@@ -22,6 +22,18 @@ const feePayerKey = PrivateKey.fromStringECDSA(stripHexPrefix(requireEnv("FACILI
 const FAULTY = optionalEnv("FAULTY_MODE", "false") === "true";
 const PORT = Number(optionalEnv("FACILITATOR_PORT", "4020"));
 
+// The library's verifyPayerSignature does a single un-retried Mirror Node fetch of the payer key;
+// a transient blip surfaces as a spurious signature_invalid. Wrap it with a bounded retry.
+const baseVerify = createHederaVerifyPayerSignature();
+const verifyPayerSignature: typeof baseVerify = async (params) => {
+  let last = await baseVerify(params);
+  for (let attempt = 0; attempt < 2 && !last.ok; attempt++) {
+    await new Promise((r) => setTimeout(r, 300 * (attempt + 1)));
+    last = await baseVerify(params);
+  }
+  return last;
+};
+
 const facSigner = toFacilitatorHederaSigner({
   getAddresses() {
     return [FACILITATOR_ID];
@@ -30,7 +42,7 @@ const facSigner = toFacilitatorHederaSigner({
     (net: string) => createHederaClient(net),
     feePayerKey,
   ),
-  verifyPayerSignature: createHederaVerifyPayerSignature(),
+  verifyPayerSignature,
   preflightTransfer: createHederaPreflightTransfer(),
 });
 

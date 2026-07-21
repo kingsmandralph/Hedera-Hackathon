@@ -11,6 +11,7 @@ build/
 *.tsbuildinfo
 packages/*/vault/
 packages/*/data/
+.data/
 *.sqlite
 *.sqlite-*
 receipts/*.local.json
