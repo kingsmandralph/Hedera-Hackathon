@@ -46,6 +46,26 @@ async function buy(id: string): Promise<void> {
   console.log(`[agent] signed; retrying with header ${Object.keys(headers)[0]}`);
 
   const paid = await fetch(url, { headers });
+  if (paid.status === 402) {
+    const pend = (await paid.clone().json().catch(() => ({}))) as { error?: string; txId?: string };
+    if (pend.error === "settlement_pending" && pend.txId) {
+      console.log(`[agent] settled on-chain but mirror lagging; redeeming ${pend.txId}...`);
+      for (let i = 0; i < 8; i++) {
+        await new Promise((r) => setTimeout(r, 4000));
+        const rd = await fetch(`${SERVER_URL}/redeem/${pend.txId}`);
+        if (rd.status === 200) {
+          const b = (await rd.json()) as { content?: unknown };
+          console.log(`[agent] REDEEMED  tx=${pend.txId}`);
+          console.log(`[agent] HashScan ${hashscanTxUrl(pend.txId, NETWORK)}`);
+          console.log(`[agent] content  ${JSON.stringify(b.content)}`);
+          return;
+        }
+      }
+      console.log(`[agent] redeem still pending — retry: GET ${SERVER_URL}/redeem/${pend.txId}`);
+      process.exitCode = 1;
+      return;
+    }
+  }
   const result = await http.processResponse(paid);
   console.log(`[agent] paymentStatus=${result.paymentStatus}`);
 

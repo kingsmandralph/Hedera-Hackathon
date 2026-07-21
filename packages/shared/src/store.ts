@@ -1,4 +1,4 @@
-import { openSync, writeSync, closeSync, mkdirSync, existsSync } from "node:fs";
+import { openSync, writeSync, closeSync, mkdirSync, existsSync, writeFileSync, readFileSync, rmSync } from "node:fs";
 import { join } from "node:path";
 
 /**
@@ -37,5 +37,35 @@ export class ConsumedStore {
 
   has(key: string): boolean {
     return existsSync(this.path(key));
+  }
+}
+
+/**
+ * Durable key→value store for settlements that settled on-chain but whose Mirror-Node confirmation
+ * timed out. Lets the buyer redeem the file later instead of losing their HBAR (the review's HIGH bug).
+ */
+export class PendingStore {
+  constructor(private readonly dir: string) {
+    mkdirSync(dir, { recursive: true });
+  }
+  private path(key: string): string {
+    return join(this.dir, encodeURIComponent(key));
+  }
+  set(key: string, value: string): void {
+    writeFileSync(this.path(key), value);
+  }
+  get(key: string): string | null {
+    try {
+      return readFileSync(this.path(key), "utf8");
+    } catch {
+      return null;
+    }
+  }
+  clear(key: string): void {
+    try {
+      rmSync(this.path(key));
+    } catch {
+      /* already gone */
+    }
   }
 }

@@ -64,9 +64,9 @@ export async function getMirrorTransaction(
   return null;
 }
 
-/** Net tinybar change credited to `account` across all transfer legs (positive = received). */
+/** Net tinybar change credited to `account` across all real transfer legs (positive = received). */
 export function netHbarTo(tx: MirrorTransaction, account: string): bigint {
   return tx.transfers
-    .filter((t) => t.account === account)
+    .filter((t) => t.account === account && !t.is_approval)
     .reduce((sum, t) => sum + BigInt(t.amount), 0n);
 }

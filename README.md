@@ -2,7 +2,7 @@
 
 **A pay-to-read data marketplace on Hedera, built on the [x402](https://x402.org) payment standard — where no file is delivered until the payment is *independently confirmed on-chain*.**
 
-Built for the [Hedera x402 bounty](https://hedera.com/x402-bounty/). An AI buyer agent requests a data file, receives an HTTP `402 Payment Required`, pays with native **HBAR** on Hedera testnet using the x402 `exact` scheme, and receives the (encrypted-at-rest) file **only after** the resource server re-reads settlement from the **Hedera Mirror Node**.
+Built for the [Hedera x402 bounty](https://hedera.com/x402-bounty/). An AI buyer agent requests a data file, receives an HTTP `402 Payment Required`, pays with native **HBAR** on Hedera testnet using the x402 `exact` scheme, and receives the (vault-sealed) file **only after** the resource server re-reads settlement from the **Hedera Mirror Node**.
 
 ### Why this one is different
 
@@ -114,10 +114,15 @@ The server serves a read-only web UI at **http://localhost:4021/** — catalog +
 
 ## Residual risks (honest scope)
 
+- **Payment is price-bound, not resource-bound** — the x402 facilitator ignores `extra.fileId`, so a payment built for file A can be presented to file B. Zero financial impact at uniform pricing; matters only with per-file prices. Production fix: per-file `payTo`/price, or bind `fileId` into the signed transaction.
+- **In-process vault, not disk-at-rest** — files are AES-256-GCM sealed in memory and unsealed only after settlement; this is process-level access control, not disk-level encryption at rest. Set a strong `VAULT_SECRET` (the code warns on the default).
 - **Content-key leakability** — a paying buyer can redistribute decrypted bytes; inherent to symmetric-key release. Production fix: server-side streaming decryption.
 - **Mirror-node TLS/DNS trust** — the gate trusts the mirror HTTPS response; production fix: cert pinning or Hedera state proofs.
 - **Catalog price/payTo have no on-chain anchor** — production fix: publish the catalog to an HCS topic.
-- Full design + review in [`docs/superpowers/specs/2026-07-21-settle402-design.md`](docs/superpowers/specs/2026-07-21-settle402-design.md).
+
+If a settlement lands on-chain but the mirror node lags past the 30 s poll, the server records it as **pending** and the buyer redeems the file via `GET /redeem/:txId` — a paid buyer never loses their HBAR.
+
+Full design + adversarial review in [`docs/superpowers/specs/2026-07-21-settle402-design.md`](docs/superpowers/specs/2026-07-21-settle402-design.md).
 
 ## License
 

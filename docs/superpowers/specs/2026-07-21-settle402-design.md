@@ -2,7 +2,7 @@
 
 > Pay-to-read data marketplace on Hedera using the x402 payment standard, where **no file is delivered before the payment is independently confirmed on-chain.** Built for the Hedera x402 bounty (5 × $1,000, deadline **2026-07-31 11:59 PM ET**).
 
-**Status:** design approved (Approach A) → corrected after adversarial pre-build review (2026-07-21) → GO-WITH-FIXES. All protocol/security corrections below are incorporated. Build has not started.
+**Status:** ✅ BUILT (2026-07-21). P0–P4 complete and pushed; the hardened flow, T1–T4 attack suite, and UI all run on live Hedera testnet. A post-build adversarial review (SHIP-WITH-FIXES) was applied: pending-redeem path (no lost HBAR on mirror lag), payer derived from signed bytes, malformed-header guard, `is_approval` filter, `VAULT_SECRET`. See `docs/p1-proof.md`, `docs/p3-foolproof.md`, and the README. This spec is the original design record; where it and the code differ, the code (and README residual-risks) win.
 
 ---
 
