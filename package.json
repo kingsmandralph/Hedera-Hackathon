@@ -16,6 +16,10 @@
     "build": "tsc -b",
     "clean": "tsc -b --clean",
     "typecheck": "tsc -b",
+    "facilitator": "node packages/facilitator/dist/index.js",
+    "server": "node packages/server/dist/index.js",
+    "agent": "node packages/agent/dist/index.js",
+    "foolproof": "bash scripts/foolproof.sh",
     "probe:exports": "node --input-type=module -e \"import('@x402/hedera').then(m=>console.log(Object.keys(m).sort().join('\\n')))\"",
     "check:singleton": "npm ls @hiero-ledger/sdk"
   },

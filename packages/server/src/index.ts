@@ -65,7 +65,53 @@ function deliver(c: Context, item: CatalogItem, note?: string) {
   return c.json({ id: item.id, name: item.name, content: JSON.parse(plaintext), ...(note ? { note } : {}) });
 }
 
+const UI_HTML = `<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>settle402 — pay-to-read on Hedera (x402)</title>
+<style>
+:root{color-scheme:dark}
+body{margin:0;background:#0b0e14;color:#c9d1d9;font:14px/1.5 ui-monospace,SFMono-Regular,Menlo,monospace}
+.wrap{max-width:900px;margin:0 auto;padding:32px 20px}
+h1{font-size:22px;margin:0 0 4px}
+.sub{color:#8b949e;margin:0 0 6px}
+.badge{display:inline-block;padding:2px 10px;border-radius:999px;font-weight:700;font-size:12px}
+.hardened{background:#0f3d2e;color:#3fb950;border:1px solid #238636}
+.naive{background:#3d1f1f;color:#f85149;border:1px solid #da3633}
+h2{font-size:14px;text-transform:uppercase;letter-spacing:.08em;color:#8b949e;margin:28px 0 10px;border-bottom:1px solid #21262d;padding-bottom:6px}
+table{width:100%;border-collapse:collapse}
+td,th{text-align:left;padding:8px 10px;border-bottom:1px solid #161b22;vertical-align:top}
+th{color:#8b949e;font-weight:600;font-size:12px}
+a{color:#58a6ff;text-decoration:none}a:hover{text-decoration:underline}
+.price{color:#3fb950}.muted{color:#6e7681}.empty{color:#6e7681;padding:12px 10px}
+code{background:#161b22;padding:1px 5px;border-radius:4px}
+</style></head><body><div class="wrap">
+<h1>settle402 <span id="mode" class="badge">…</span></h1>
+<p class="sub">Pay-to-read data marketplace on Hedera testnet via the x402 <code>exact</code> scheme.</p>
+<p class="sub muted">No file is released until settlement is <b>independently confirmed on the Hedera Mirror Node</b>. Buyers pay with the CLI agent; this page is read-only.</p>
+<h2>Catalog</h2>
+<table><thead><tr><th>File</th><th>Description</th><th>Price</th></tr></thead><tbody id="catalog"></tbody></table>
+<h2>Settled receipts (live)</h2>
+<table><thead><tr><th>File</th><th>Buyer</th><th>Transaction</th></tr></thead><tbody id="receipts"><tr><td class="empty" colspan="3">No purchases yet — run <code>npm run agent -- buy &lt;id&gt;</code></td></tr></tbody></table>
+</div>
+<script>
+async function load(){
+  try{
+    const cat=await (await fetch('/catalog')).json();
+    document.getElementById('mode').textContent=cat.mode;
+    document.getElementById('mode').className='badge '+(cat.mode==='hardened'?'hardened':'naive');
+    document.getElementById('catalog').innerHTML=cat.files.map(f=>
+      '<tr><td><b>'+f.id+'</b><br><span class="muted">'+f.name+'</span></td><td>'+f.description+'</td><td class="price">'+cat.price.human+'</td></tr>').join('');
+    const rec=(await (await fetch('/receipts')).json()).receipts;
+    if(rec.length) document.getElementById('receipts').innerHTML=rec.slice().reverse().map(r=>
+      '<tr><td><b>'+r.fileId+'</b></td><td class="muted">'+r.buyer+'</td><td><a href="'+r.hashscan+'" target="_blank">'+r.txId+'</a></td></tr>').join('');
+  }catch(e){}
+}
+load();setInterval(load,3000);
+</script></body></html>`;
+
 const app = new Hono();
+
+app.get("/", (c) => c.html(UI_HTML));
 
 app.get("/catalog", (c) =>
   c.json({
