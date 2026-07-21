@@ -1,0 +1,15 @@
+{
+  "name": "@settle402/agent",
+  "version": "0.1.0",
+  "type": "module",
+  "main": "./dist/index.js",
+  "scripts": {
+    "start": "tsx src/index.ts",
+    "build": "tsc -b"
+  },
+  "dependencies": {
+    "@settle402/shared": "*",
+    "@x402/core": "2.19.0",
+    "@x402/hedera": "2.19.0"
+  }
+}

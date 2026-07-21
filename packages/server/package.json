@@ -1,0 +1,19 @@
+{
+  "name": "@settle402/server",
+  "version": "0.1.0",
+  "type": "module",
+  "main": "./dist/index.js",
+  "scripts": {
+    "dev": "tsx watch src/index.ts",
+    "start": "node dist/index.js",
+    "build": "tsc -b"
+  },
+  "dependencies": {
+    "@settle402/shared": "*",
+    "@x402/core": "2.19.0",
+    "@x402/hedera": "2.19.0",
+    "@x402/hono": "2.19.0",
+    "@hono/node-server": "^1.13.0",
+    "hono": "^4.6.0"
+  }
+}

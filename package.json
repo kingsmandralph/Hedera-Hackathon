@@ -1,0 +1,31 @@
+{
+  "name": "settle402",
+  "private": true,
+  "version": "0.1.0",
+  "description": "Pay-to-read data marketplace on Hedera via x402 — no file delivered before on-chain settlement is confirmed.",
+  "license": "MIT",
+  "type": "module",
+  "engines": { "node": ">=20.18.3" },
+  "workspaces": [
+    "packages/shared",
+    "packages/facilitator",
+    "packages/server",
+    "packages/agent"
+  ],
+  "scripts": {
+    "build": "tsc -b",
+    "clean": "tsc -b --clean",
+    "typecheck": "tsc -b",
+    "probe:exports": "node --input-type=module -e \"import('@x402/hedera').then(m=>console.log(Object.keys(m).sort().join('\\n')))\"",
+    "check:singleton": "npm ls @hiero-ledger/sdk"
+  },
+  "overrides": {
+    "@hiero-ledger/sdk": "2.85.0",
+    "@hiero-ledger/proto": "2.31.0"
+  },
+  "devDependencies": {
+    "@types/node": "^20.14.0",
+    "tsx": "^4.19.0",
+    "typescript": "^5.6.3"
+  }
+}
