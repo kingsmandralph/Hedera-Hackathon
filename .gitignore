@@ -1,0 +1,20 @@
+# secrets — NEVER commit
+.env
+.env.local
+*.local
+.git/.gh-credentials
+
+# runtime data
+node_modules/
+dist/
+build/
+packages/*/vault/
+packages/*/data/
+*.sqlite
+*.sqlite-*
+receipts/*.local.json
+
+# misc
+.DS_Store
+*.log
+coverage/
